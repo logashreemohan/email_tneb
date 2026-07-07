@@ -1,0 +1,13 @@
+{
+  "name": "noting",
+  "version": "1.0.0",
+  "description": "1. Go to https://supabase.com → Create new project\r 2. Go to SQL Editor → paste contents of `supabase_setup.sql` → Run\r 3. Go to Authentication → Users → Add User:\r    - `admin@emailshield.com` / `Admin@123`\r    - `manager@emailshield.com` / `Manager@123`\r 4. Run in SQL Editor to set admin role:\r    ```sql\r    UPDATE public.profiles SET role = 'admin' WHERE email = 'admin@emailshield.com';\r    ```\r 5. Copy your **Project URL** and **anon key** from Settings → API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}
