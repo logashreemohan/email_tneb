@@ -54,10 +54,14 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString(), version: '1.0.0' })
 })
 
-// 404
-app.use((req, res) => {
-  console.log('404 Not Found:', req.method, req.originalUrl);
-  res.status(404).json({ error: 'Route not found' })
+// Serve static files from the frontend
+const path = require('path')
+const frontendDist = path.join(__dirname, '../../frontend/dist')
+app.use(express.static(frontendDist))
+
+// Catch-all route to serve React index.html for unknown routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(frontendDist, 'index.html'))
 })
 
 // Error handler
