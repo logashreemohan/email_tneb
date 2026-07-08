@@ -1,8 +1,28 @@
 require('dotenv').config()
 const sequelize = require('./config/database');
 
-// Sync database
-sequelize.sync({ force: false }).then(() => console.log('SQLite Synced'));
+const User = require('./models/User');
+
+// Sync database and seed users
+sequelize.sync({ force: false }).then(async () => {
+  console.log('SQLite Synced');
+  
+  try {
+    const adminExists = await User.findOne({ where: { email: 'admin@emailshield.com' } });
+    if (!adminExists) {
+      await User.create({ email: 'admin@emailshield.com', password: 'Admin@123', role: 'admin' });
+      console.log('✅ Seeded Admin user');
+    }
+
+    const managerExists = await User.findOne({ where: { email: 'manager@emailshield.com' } });
+    if (!managerExists) {
+      await User.create({ email: 'manager@emailshield.com', password: 'Manager@123', role: 'manager' });
+      console.log('✅ Seeded Manager user');
+    }
+  } catch (err) {
+    console.error('Error seeding users:', err);
+  }
+});
 
 const express     = require('express')
 const cors        = require('cors')
