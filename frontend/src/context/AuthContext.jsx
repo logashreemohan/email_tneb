@@ -74,6 +74,19 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // ── Sign Up ──
+  const signUp = async (email, password, role) => {
+    try {
+      const { data } = await api.post('/auth/register', { email, password, role });
+      setUser(data.user)
+      setRole(data.role)
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+      return data
+    } catch (err) {
+      throw new Error(err.response?.data?.error || err.message || 'Registration failed')
+    }
+  }
+
   // ── Sign Out ──
   const signOut = async () => {
     localStorage.removeItem(STORAGE_KEY)
@@ -81,7 +94,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, role, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, role, loading, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   )

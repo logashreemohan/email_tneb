@@ -163,21 +163,15 @@ function RoleSelector({ onSelect }) {
 // ─── Step 2 — Login form ──────────────────────────────────────────────────────
 function LoginForm({ type, onBack }) {
   const isAdmin = type === 'admin'
+  const [isSignUp, setIsSignUp]       = useState(false)
   const [email, setEmail]             = useState('')
   const [password, setPassword]       = useState('')
   const [showPw, setShowPw]           = useState(false)
   const [captchaDone, setCaptchaDone] = useState(false)
   const [captchaKey, setCaptchaKey]   = useState(0)
   const [loading, setLoading]         = useState(false)
-  const { signIn }                    = useAuth()
+  const { signIn, signUp }            = useAuth()
   const navigate                      = useNavigate()
-
-  const demo = isAdmin
-    ? { email:'admin@tneb.gov.in',   password:'Admin@123' }
-    : { email:'manager@tneb.gov.in', password:'Manager@123' }
-  const demoReal = isAdmin
-    ? { email:'admin@emailshield.com',   password:'Admin@123' }
-    : { email:'manager@emailshield.com', password:'Manager@123' }
 
   const headerGradient = isAdmin
     ? 'linear-gradient(135deg,#0a1430,#1e3a8a)'
@@ -194,16 +188,20 @@ function LoginForm({ type, onBack }) {
     if (!email || !password) { toast.error('Enter email and password'); return }
     setLoading(true)
     try {
-      const loginEmail = email === demo.email ? demoReal.email : email
-      const { role }   = await signIn(loginEmail, password)
-      if (role !== type) {
-        toast.error(`Wrong panel — use the ${role === 'admin' ? 'Admin' : 'Manager'} panel`)
-        resetCaptcha(); setLoading(false); return
+      if (isSignUp) {
+        await signUp(email, password, type)
+        toast.success('Registration successful')
+      } else {
+        const { role } = await signIn(email, password)
+        if (role !== type) {
+          toast.error(`Wrong panel — use the ${role === 'admin' ? 'Admin' : 'Manager'} panel`)
+          resetCaptcha(); setLoading(false); return
+        }
+        toast.success('Login successful')
       }
-      toast.success('Login successful')
-      navigate(role === 'admin' ? '/admin' : '/manager')
+      navigate(type === 'admin' ? '/admin' : '/manager')
     } catch (err) {
-      toast.error(err.message || 'Invalid credentials')
+      toast.error(err.message || (isSignUp ? 'Registration failed' : 'Invalid credentials'))
       resetCaptcha()
     } finally { setLoading(false) }
   }
@@ -230,7 +228,7 @@ function LoginForm({ type, onBack }) {
           <div style={{ flex:1 }}>
             <h2 style={{ color:'#fff', fontWeight:800, fontSize:18,
               margin:0, lineHeight:1.2 }}>
-              {isAdmin ? 'Admin Login' : 'Manager Login'}
+              {isAdmin ? 'Admin Login' : (isSignUp ? 'Manager Registration' : 'Manager Login')}
             </h2>
             <p style={{ color:'rgba(255,255,255,0.6)', fontSize:12, margin:'3px 0 0' }}>
               {isAdmin ? 'Full access · Bulk validation · Analytics' : 'Single validation · My history'}
@@ -251,19 +249,6 @@ function LoginForm({ type, onBack }) {
         <form onSubmit={handleSubmit} style={{ padding:24, display:'flex',
           flexDirection:'column', gap:18 }}>
 
-          {/* Demo fill */}
-          <button type="button" onClick={() => { setEmail(demo.email); setPassword(demo.password) }}
-            style={{
-              background:'#eff6ff', border:'1px solid #bfdbfe', borderRadius:12,
-              padding:'8px 12px', cursor:'pointer', display:'flex',
-              alignItems:'center', gap:8, width:'100%', fontSize:12, color:'#1e3a8a',
-            }}>
-            <Zap style={{ width:12, height:12, color:'#f59e0b', flexShrink:0 }} />
-            <span style={{ color:'#94a3b8' }}>Demo:</span>
-            <span style={{ fontFamily:'monospace', fontWeight:700 }}>{demo.email}</span>
-            <span style={{ marginLeft:'auto', color:'#60a5fa' }}>↑ click to fill</span>
-          </button>
-
           {/* Email */}
           <div>
             <label style={{ display:'block', fontSize:11, fontWeight:700, color:'#1e3a8a',
@@ -274,7 +259,7 @@ function LoginForm({ type, onBack }) {
               <Mail style={{ position:'absolute', left:12, top:'50%',
                 transform:'translateY(-50%)', width:15, height:15, color:'#94a3b8' }} />
               <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-                placeholder={demo.email} autoComplete="email"
+                placeholder="Enter your email" autoComplete="email"
                 className="input-field" style={{ paddingLeft:36 }} />
             </div>
           </div>
@@ -324,12 +309,25 @@ function LoginForm({ type, onBack }) {
               boxShadow: captchaDone && !loading ? '0 4px 20px rgba(30,58,138,0.35)' : 'none',
             }}>
             {loading
-              ? <><Loader2 style={{ width:16, height:16, animation:'spin 1s linear infinite' }} /> Authenticating…</>
+              ? <><Loader2 style={{ width:16, height:16, animation:'spin 1s linear infinite' }} /> {isSignUp ? 'Registering…' : 'Authenticating…'}</>
               : !captchaDone
-                ? <><Shield style={{ width:16, height:16 }} /> Complete verification to login</>
-                : <><Shield style={{ width:16, height:16 }} /> Login as {isAdmin ? 'Admin' : 'Manager'}</>
+                ? <><Shield style={{ width:16, height:16 }} /> Complete verification to {isSignUp ? 'register' : 'login'}</>
+                : <><Shield style={{ width:16, height:16 }} /> {isSignUp ? 'Create Manager Account' : `Login as ${isAdmin ? 'Admin' : 'Manager'}`}</>
             }
           </button>
+
+          {/* Toggle Sign Up / Login for Manager only */}
+          {!isAdmin && (
+            <div style={{ textAlign:'center', marginTop:4 }}>
+              <p style={{ fontSize:12, color:'#64748b' }}>
+                {isSignUp ? 'Already have an account?' : 'Need to register?'}
+                <button type="button" onClick={() => setIsSignUp(!isSignUp)}
+                  style={{ background:'none', border:'none', color:'#2563eb', fontWeight:700, marginLeft:6, cursor:'pointer' }}>
+                  {isSignUp ? 'Login here' : 'Sign up here'}
+                </button>
+              </p>
+            </div>
+          )}
         </form>
       </div>
     </div>
