@@ -60,7 +60,7 @@ const frontendDist = path.join(__dirname, '../../frontend/dist')
 app.use(express.static(frontendDist))
 
 // Catch-all route to serve React index.html for unknown routes
-app.get('*', (req, res) => {
+app.use((req, res) => {
   res.sendFile(path.join(frontendDist, 'index.html'))
 })
 
