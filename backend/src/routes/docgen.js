@@ -123,8 +123,8 @@ function makeLetter(p) {
     { title:'Letterhead', content:`TAMIL NADU ELECTRICITY BOARD\n${dept}\nNo. 800, Anna Salai, Chennai – 600 002\nPhone: 044-2852-0131  |  Email: info@tneb.tn.gov.in` },
     { title:'Reference & Date', content:`Letter No. : ${REF(dept.replace(/\s/g,'').slice(0,6))}\nDate        : ${p.date}\nPlace       : ${loc}` },
     { title:'Addressee', content:`To,\n${p.toName}\nTamil Nadu Electricity Board\n${loc}` },
-    { title:'Subject', content:`Sub : ${subj} — reg.\n\nRef : (i) TNEB Office Order No. [___] dated [Date]\n      (ii) Previous correspondence on the above subject` },
-    { title:'Body', content:`Sir / Madam,\n\nWith reference to the subject cited above, I am writing to formally ${subj.toLowerCase().startsWith('request')?subj.toLowerCase():'bring to your attention: '+subj}.\n\n1. Background\n   The ${dept} has been evaluating this matter thoroughly. After careful review of operational requirements, it has been established that immediate action is necessary.\n\n2. Current Status\n   All relevant technical and administrative assessments have been completed. The findings support the need for this request and align with TNEB's Standard Operating Procedures.\n\n3. Request / Proposal\n   In view of the above, it is requested that your good office may kindly:\n   (a) Grant the necessary approval / sanction.\n   (b) Allocate the required resources and provide administrative support.\n\nYour early and favourable response is greatly appreciated.\n\nThanking you,\n\nYours faithfully,\n\n${p.fromName}\n${dept}, TNEB, ${loc}\nDate : ${p.date}` },
+    { title:'Subject', content:`Sub : ${subj} — reg.\n\nRef : Previous correspondence regarding ${subj.toLowerCase()}` },
+    { title:'Body', content:`Sir / Madam,\n\nWith reference to the subject cited above, I am writing to formally ${subj.toLowerCase().startsWith('request')?subj.toLowerCase():'bring to your attention the matter of '+subj.toLowerCase()}.\n\nWe have evaluated this matter thoroughly. After careful review of operational requirements, it has been established that immediate action is necessary to ensure smooth functioning.\n\nAll relevant technical and administrative assessments have been completed successfully. The findings support the need for this request and align perfectly with TNEB's Standard Operating Procedures.\n\nIn view of the above, it is requested that your good office may kindly grant the necessary approval and allocate the required resources.\n\nYour early and favourable response is greatly appreciated.\n\nThanking you,\n\nYours faithfully,\n\n${p.fromName}\n${dept}, TNEB, ${loc}\nDate : ${p.date}` },
   ]}
 }
 
@@ -133,8 +133,8 @@ function makeMeeting(p) {
   const chair=p.names[0]||'Chief Engineer', rec=p.names[1]||'Assistant Engineer'
   return { title:`Minutes of Meeting — ${subj}`, sections:[
     { title:'Meeting Details', content:`Meeting Reference : ${REF('MOM')}\nDate              : ${p.date}\nVenue             : ${loc}\nChaired By        : ${chair}\nSubject           : ${subj}` },
-    { title:'Proceedings', content:`The Chairperson emphasised the significance of ${subj} for TNEB's operational objectives. A detailed briefing was presented.` },
-    { title:'Decisions & Resolutions', content:`The following were unanimously adopted:\n  1. ${subj} to be implemented w.e.f. [date].\n  2. ${chair} to submit implementation report within 10 working days.` },
+    { title:'Proceedings', content:`The Chairperson emphasised the significance of ${subj} for TNEB's operational objectives. A detailed briefing was presented to all attendees.` },
+    { title:'Decisions & Resolutions', content:`The following were unanimously adopted:\n  1. ${subj} to be implemented with immediate effect.\n  2. ${chair} to submit the final implementation report within 10 working days.` },
   ]}
 }
 
@@ -235,7 +235,7 @@ router.post('/modify', async (req, res) => {
   
   if (isOpenAIConfigured() || isGeminiConfigured()) {
        try {
-           const sysPrompt = `You are an expert Document AI Editor. 
+           const sysPrompt = `You are an expert Document AI Editor for the Tamil Nadu Electricity Board (TNEB). 
 The user has an existing document open. They want you to modify it based on their instruction.
 Respond with a JSON object. If the user is just chatting conversationally without asking for edits, return { "isChat": true, "reply": "..." }.
 Otherwise, return the updated document matching exactly this JSON structure:
@@ -246,7 +246,10 @@ Otherwise, return the updated document matching exactly this JSON structure:
     { "title": "Section Title", "content": "Section Text" }
   ]
 }
-Do NOT wrap the JSON in markdown code blocks (\`\`\`json). Just output raw JSON.` + (language ? `\nCRITICAL: You MUST write the generated document content and any conversational replies in the following language: ${language}.` : '');
+CRITICAL RULES:
+1. Do NOT use placeholders like [Date], [Name], or [___].
+2. Create fully written, highly professional, realistic content. If details are missing, invent realistic ones suitable for TNEB.
+3. Do NOT wrap the JSON in markdown code blocks (\`\`\`json). Just output raw JSON.` + (language ? `\nCRITICAL: You MUST write the generated document content and any conversational replies in the following language: ${language}.` : '');
            
            const userPrompt = `Current Document:\n${JSON.stringify(currentDoc)}\n\nInstruction: ${instruction}\n\nAttached Context:\n${attachedText || ''}`;
            let rawContent = "";
@@ -304,7 +307,7 @@ router.post('/generate', async (req, res) => {
 
   if (isOpenAIConfigured() || isGeminiConfigured()) {
        try {
-           const sysPrompt = `You are an expert Document AI Assistant. 
+           const sysPrompt = `You are an expert Document AI Assistant for the Tamil Nadu Electricity Board (TNEB). 
 You can either chat with the user, OR generate a structured official document based on their instructions.
 If the user's intent is conversational (e.g. greeting, generic question), respond with a JSON like:
 { "isChat": true, "reply": "Your conversational response here" }
@@ -317,7 +320,11 @@ If the user wants to create/generate a document, or process an attached file, re
     { "title": "Section Title", "content": "Section Text" }
   ]
 }
-Do NOT wrap the JSON in markdown code blocks (\`\`\`json). Just output raw JSON.` + (language ? `\nCRITICAL: You MUST write the generated document content and any conversational replies in the following language: ${language}.` : '');
+CRITICAL RULES:
+1. Do NOT use placeholders like [Date], [Name], or [___].
+2. Create fully written, highly professional, realistic content. If details are missing, invent realistic ones suitable for TNEB.
+3. Keep the output extremely clean and ready to print.
+4. Do NOT wrap the JSON in markdown code blocks (\`\`\`json). Just output raw JSON.` + (language ? `\nCRITICAL: You MUST write the generated document content and any conversational replies in the following language: ${language}.` : '');
            
            const userPrompt = `Instruction: ${instr}\n\nAttached Context:\n${attached}`;
            let rawContent = "";
