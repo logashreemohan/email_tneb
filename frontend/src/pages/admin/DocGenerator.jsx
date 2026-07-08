@@ -9,7 +9,7 @@ import { Upload, X, Loader2, Paperclip, Mic, ArrowUp, Sparkles, FileText, File, 
 import { supabase, isSupabaseConfigured } from '../../lib/supabase'
 import { localDB, useAuth } from '../../context/AuthContext'
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const API = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:5000')
 
 // ─── exports ──────────────────────────────────────────────────────────────────
 function dlPDF(doc) {

@@ -10,7 +10,7 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { validateEmailClient } from '../../lib/emailValidatorClient'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:5000')
 
 const ACCEPTED = {
   'text/csv': ['.csv'], 'text/plain': ['.txt'],

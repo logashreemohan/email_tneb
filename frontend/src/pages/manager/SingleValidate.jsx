@@ -4,7 +4,7 @@ import toast from 'react-hot-toast'
 import { useAuth, localDB } from '../../context/AuthContext'
 import { validateEmailClient } from '../../lib/emailValidatorClient'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:5000')
 
 const TYPOS = {
   'gamil.com': 'gmail.com', 'gmal.com': 'gmail.com', 'gmial.com': 'gmail.com',

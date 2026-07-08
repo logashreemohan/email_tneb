@@ -30,7 +30,7 @@
     "openai": "^6.45.0",
     "pdf-parse": "^2.4.5",
     "sequelize": "^6.37.8",
-    "sqlite3": "^6.0.1"
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "jest": "^30.4.2"
