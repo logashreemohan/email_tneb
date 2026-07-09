@@ -21,8 +21,11 @@ const ACCEPTED = {
 }
 
 function extractEmails(text) {
-  const found = text.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g) || []
-  return [...new Set(found.map(e => e.trim().toLowerCase()))]
+  const rawEntries = text.split(/[\r\n,;]+/)
+  const found = rawEntries
+    .map(e => e.trim().toLowerCase())
+    .filter(e => e.includes('@'))
+  return [...new Set(found)]
 }
 
 function FileIcon({ ext }) {
@@ -51,7 +54,11 @@ export default function BulkValidate() {
       if (ext === '.csv') {
         await new Promise((resolve, reject) => {
           Papa.parse(file, {
-            complete: (res) => { found = extractEmails(res.data.flat().join(' ')); resolve() },
+            complete: (res) => { 
+              const cells = res.data.flat().filter(e => e && typeof e === 'string')
+              found = extractEmails(cells.join('\n'))
+              resolve() 
+            },
             error: reject,
           })
         })
@@ -60,12 +67,13 @@ export default function BulkValidate() {
       } else if (['.xlsx', '.xls'].includes(ext)) {
         const buf = await file.arrayBuffer()
         const wb  = XLSX.read(buf, { type: 'array' })
-        let allText = ''
+        let cells = []
         wb.SheetNames.forEach(name => {
           const rows = XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, defval: '' })
-          allText += rows.flat().join(' ') + ' '
+          const sheetCells = rows.flat().filter(e => e && typeof e === 'string')
+          cells = cells.concat(sheetCells)
         })
-        found = extractEmails(allText)
+        found = extractEmails(cells.join('\n'))
       } else if (ext === '.docx') {
         const result = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() })
         found = extractEmails(result.value)
